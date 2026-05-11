@@ -116,9 +116,10 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
     }
 
     const shown = routes
-        ? (active === 'fastest' ? routes.fastest_route : routes.safest_route)
+        ? active === 'fastest'
+            ? routes.fastest_route
+            : (routes.safest_routes || [routes.safest_route]).find((_, i) => `safest_${i + 1}` === active) || routes.safest_route
         : null
-
     return (
         <aside className="sidebar">
 
@@ -175,7 +176,8 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
 
                     {[
                         { key: 'fastest', r: routes.fastest_route, label: '⚡ Fastest Route', cls: 'fast-card' },
-                        ...(routes.safest_routes || [routes.safest_route]).map((r: any, i: number) => ({
+                        ...(routes.safest_routes || [routes.safest_route]).map((r, i) => ({
+
                             key: `safest_${i + 1}`,
                             r,
                             label: `🛡 Safest Route #${i + 1}`,
