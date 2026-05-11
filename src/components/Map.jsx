@@ -38,10 +38,17 @@ export default function Map({ heatmap, currentRoute, routes, active }) {
                     positions={routes.fastest_route.coords.map(c => [c[1], c[0]])}
                     pathOptions={{ color: '#ff9f1c', weight: active === 'fastest' ? 5 : 2, opacity: active === 'fastest' ? 1 : 0.3 }}
                 />
-                <Polyline
-                    positions={routes.safest_route.coords.map(c => [c[1], c[0]])}
-                    pathOptions={{ color: '#2ec4b6', weight: active === 'safest' ? 5 : 2, opacity: active === 'safest' ? 1 : 0.3 }}
-                />
+                {(routes.safest_routes || [routes.safest_route]).map((r, i) => (
+                    <Polyline
+                        key={r.route_type || i}
+                        positions={r.coords.map(c => [c[1], c[0]])}
+                        pathOptions={{
+                            color: i === 0 ? '#2ec4b6' : '#a855f7',
+                            weight: active === r.route_type ? 5 : 2,
+                            opacity: active === r.route_type ? 1 : 0.3
+                        }}
+                    />
+                ))}
             </>}
 
             {/* Risk spots on active route */}
