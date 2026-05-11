@@ -175,7 +175,12 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
 
                     {[
                         { key: 'fastest', r: routes.fastest_route, label: '⚡ Fastest Route', cls: 'fast-card' },
-                        { key: 'safest', r: routes.safest_route, label: '🛡 Safest Route', cls: 'safe-card' },
+                        ...(routes.safest_routes || [routes.safest_route]).map((r: any, i: number) => ({
+                            key: `safest_${i + 1}`,
+                            r,
+                            label: `🛡 Safest Route #${i + 1}`,
+                            cls: 'safe-card'
+                        })),
                     ].map(({ key, r, label, cls }) => (
                         <div
                             key={key}
@@ -221,7 +226,7 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
                                 <span className="risk-meter-value">{(routes.fastest_route.risk_score * 100).toFixed(0)}%</span>
                             </div>
                             <div className="risk-meter-bar-bg">
-                                <div 
+                                <div
                                     className={`risk-meter-bar-fill ${routes.fastest_route.risk_score > 0.6 ? 'high-risk' : 'low-risk'}`}
                                     style={{ width: `${routes.fastest_route.risk_score * 100}%` }}
                                 ></div>
@@ -233,7 +238,7 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
                                 <span className="risk-meter-value">{(routes.safest_route.risk_score * 100).toFixed(0)}%</span>
                             </div>
                             <div className="risk-meter-bar-bg">
-                                <div 
+                                <div
                                     className={`risk-meter-bar-fill ${routes.safest_route.risk_score > 0.6 ? 'high-risk' : 'low-risk'}`}
                                     style={{ width: `${routes.safest_route.risk_score * 100}%` }}
                                 ></div>
