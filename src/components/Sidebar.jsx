@@ -115,11 +115,25 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
         onSearch(start.lat, start.lon, end.lat, end.lon)
     }
 
+    // Build all route cards including safest_routes array
+    const allRoutes = routes ? [
+        { key: 'fastest', r: routes.fastest_route, label: '⚡ Fastest Route', cls: 'fast-card' },
+        ...(routes.safest_routes || [routes.safest_route]).map((r, i) => ({
+            key: r.route_type || `safest_${i + 1}`,
+            r,
+            label: r.route_label || `🛡 Safest Route #${i + 1}`,
+            cls: 'safe-card'
+        })),
+    ] : []
+
+    // shown = whichever route card is currently selected
     const shown = routes
         ? active === 'fastest'
             ? routes.fastest_route
-            : (routes.safest_routes || [routes.safest_route]).find((_, i) => `safest_${i + 1}` === active) || routes.safest_route
+            : (routes.safest_routes || [routes.safest_route]).find(r => r.route_type === active)
+            ?? routes.safest_route
         : null
+
     return (
         <aside className="sidebar">
 
@@ -174,21 +188,12 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
                 <div className="sec">
                     <div className="sec-title">Route Comparison</div>
 
-                    {[
-                        { key: 'fastest', r: routes.fastest_route, label: '⚡ Fastest Route', cls: 'fast-card' },
-                        ...(routes.safest_routes || [routes.safest_route]).map((r, i) => ({
-
-                            key: `safest_${i + 1}`,
-                            r,
-                            label: `🛡 Safest Route #${i + 1}`,
-                            cls: 'safe-card'
-                        })),
-                    ].map(({ key, r, label, cls }) => (
+                    {allRoutes.map(({ key, r, label, cls }) => (
                         <div
                             key={key}
                             className={`route-card ${cls} ${active === key ? 'active' : ''}`}
                             onClick={() => setActive(key)}
-                            style={{ animationDelay: key === 'safest' ? '0.1s' : '0s' }}
+                            style={{ animationDelay: key === 'balanced' ? '0.1s' : key === 'cautious' ? '0.2s' : '0s' }}
                         >
                             <div className="rc-header">
                                 <div className="rc-type">{label}</div>
@@ -222,30 +227,20 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
                     {/* Risk Comparison Meter */}
                     <div className="risk-meter">
                         <div className="risk-meter-title">Risk Comparison</div>
-                        <div className="risk-meter-row">
-                            <div className="risk-meter-label">
-                                <span className="risk-meter-name">⚡ Fastest</span>
-                                <span className="risk-meter-value">{(routes.fastest_route.risk_score * 100).toFixed(0)}%</span>
+                        {allRoutes.map(({ key, r, label }) => (
+                            <div className="risk-meter-row" key={key}>
+                                <div className="risk-meter-label">
+                                    <span className="risk-meter-name">{label}</span>
+                                    <span className="risk-meter-value">{(r.risk_score * 100).toFixed(0)}%</span>
+                                </div>
+                                <div className="risk-meter-bar-bg">
+                                    <div
+                                        className={`risk-meter-bar-fill ${r.risk_score > 0.6 ? 'high-risk' : 'low-risk'}`}
+                                        style={{ width: `${r.risk_score * 100}%` }}
+                                    ></div>
+                                </div>
                             </div>
-                            <div className="risk-meter-bar-bg">
-                                <div
-                                    className={`risk-meter-bar-fill ${routes.fastest_route.risk_score > 0.6 ? 'high-risk' : 'low-risk'}`}
-                                    style={{ width: `${routes.fastest_route.risk_score * 100}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                        <div className="risk-meter-row">
-                            <div className="risk-meter-label">
-                                <span className="risk-meter-name">🛡 Safest</span>
-                                <span className="risk-meter-value">{(routes.safest_route.risk_score * 100).toFixed(0)}%</span>
-                            </div>
-                            <div className="risk-meter-bar-bg">
-                                <div
-                                    className={`risk-meter-bar-fill ${routes.safest_route.risk_score > 0.6 ? 'high-risk' : 'low-risk'}`}
-                                    style={{ width: `${routes.safest_route.risk_score * 100}%` }}
-                                ></div>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             )}
@@ -254,7 +249,7 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
             {shown && (
                 <div className="sec">
                     <div className="sec-title">
-                        ⚠ Risk Points · {active === 'safest' ? 'Safest' : 'Fastest'} Route
+                        ⚠ Risk Points · {shown.route_label || active} Route
                     </div>
                     {(!shown.risk_points || shown.risk_points.length === 0) && (
                         <div style={{ color: 'var(--teal)', fontSize: 13, padding: '4px 0' }}>
