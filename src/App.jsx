@@ -28,7 +28,7 @@ export default function App() {
         end_lat: eLat, end_lon: eLon
       })
       setRoutes(data)
-      setActive('safest')
+      setActive('balanced')
 
       // Trigger pulse effect
       setPulseEffect(true)
@@ -68,7 +68,13 @@ export default function App() {
   }
 
   const currentRoute = routes
-    ? (active === 'fastest' ? routes.fastest_route : routes.safest_route)
+    ? active === 'fastest'
+      ? routes.fastest_route
+      : active === 'balanced'
+        ? routes.safest_routes?.[0] || routes.safest_route
+        : active === 'cautious'
+          ? routes.safest_routes?.[1] || routes.safest_route
+          : routes.safest_route
     : null
 
   return (
