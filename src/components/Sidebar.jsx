@@ -130,10 +130,12 @@ export default function Sidebar({ onSearch, routes, active, setActive, loading }
     const shown = routes
         ? active === 'fastest'
             ? routes.fastest_route
-            : (routes.safest_routes || [routes.safest_route]).find(r => r.route_type === active)
-            ?? routes.safest_route
+            : active === 'balanced'
+                ? routes.safest_routes?.[0] || routes.safest_route
+                : active === 'cautious'
+                    ? routes.safest_routes?.[1] || routes.safest_route
+                    : routes.safest_route
         : null
-
     return (
         <aside className="sidebar">
 
